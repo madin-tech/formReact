@@ -1,6 +1,9 @@
+import Input from "./components/Input"
 const App = () => {
   return (
-    <div>App</div>
+    <div>
+      <Input/>
+    </div>
   )
 }
 
