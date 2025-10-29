@@ -1,21 +1,25 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Input = () => {
  
-  
-  const [todos, setTodos] = useState([]);
+ const storedTodo = JSON.parse(localStorage.getItem("todos"));
+  const [todos, setTodos] = useState(storedTodo ? storedTodo : []);
  const inputRef = useRef();
   const [edited, setEdited] = useState(null);
- 
+useEffect(()=>{
+localStorage.setItem("todos", JSON.stringify(todos));
+},[todos])
  const form = (e) => {
     e.preventDefault();
 
 if(edited){
 const updated = todos.find((todo)=>todo.id==edited);
 updated.text = inputRef.current.value;
-const newTodo = edited ? updated : todos;
+const newTodo = todos.map((todo) => (todo.id==edited ? updated : todo));
 setTodos(newTodo);
 setEdited(null);
+
+
 }else{
    const newTodo = {
      id: Date.now(),
@@ -24,14 +28,14 @@ setEdited(null);
    };
     setTodos((prev) => [...prev, newTodo]);
 }
- 
-   
+  
+  e.target[0].value = ""; 
   };
   const handleDel = (id)=>{
    
  let deleteArr = todos.filter((todo) => todo.id !== id);
  setTodos(deleteArr);
-console.log(id);
+
 
   };
 const handleEdit = (id)=>{
@@ -43,6 +47,18 @@ const handleEdit = (id)=>{
     }
 })
 
+}
+const toggle = (id) => {
+  const newArr =  todos.map((todo) => {
+    if(id === todo.id)
+        return {...todo, isCompleted: !todo.isCompleted}
+
+    return todo
+  });
+
+  setTodos(newArr)
+
+    
 }
   return (
     <div
@@ -56,7 +72,7 @@ const handleEdit = (id)=>{
     >
       <form action="" onSubmit={form}>
         <input type="text" placeholder="Add todo..." ref={inputRef} />
-        <button type="submit">Submit</button>
+        <button type="submit"> {edited ? "Update" : "Add"}</button>
       </form>
       <div style={{ display: `flex`, flexDirection: `column` }}>
         {todos.map((todo) => (
@@ -70,7 +86,15 @@ const handleEdit = (id)=>{
             }}
           >
             <div style={{ padding: `30px` }}>
-              <p style={{ fontSize: `20px` }}>{todo.text}</p>
+              <p
+                style={{
+                  fontSize: `20px`,
+                  textDecoration: todo.isCompleted ? "line-through" : "",
+                }}
+                onClick={() => toggle(todo.id)}
+              >
+                {todo.text}
+              </p>
             </div>
             <div style={{ display: `flex`, gap: `20px` }}>
               <button
